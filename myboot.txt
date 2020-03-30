@@ -1,0 +1,100 @@
+### Bootstrapping method for permafrost organic carbon (OC) pool calculations
+### by Loeka Jongejans
+### Potsdam, March 2020
+
+# script for bootstrapping method for OC pool calculations used by:
+cit <- ("Jongejans, L. L., Strauss, J., Lenz, J., Peterse, F., Mangelsdorf, K., Fuchs, M., et al. (2018). Organic matter characteristics in yedoma and thermokarst deposits on Baldwin Peninsula, west Alaska. Biogeosciences 15, 6033-6048. doi:10.5194/bg-15-6033-2018.")
+
+# the following script creates a function that can be called to automatically calculate the OC budget and OC density:
+# myboot() - quantifies OC storage for 2 study sites on Baldwin Peninsula: 
+# 1) yedoma exposure, referred to as BAL16-B2 (66.73262 N, 62.49450 W) 
+# 2) drained thermokarst lake basin (DTLB) exposure, referred to as BAL16-B4 (66.73644 N, 62.50208 W)
+
+#### Prerequisites
+#### set working directory to directory containing data files
+#### the script requires the R package boot to be installed
+	
+#### myboot function
+	
+	# calculations of OC budget with following formula:
+		# OC pool [Mt] = (thickness * coverage * ((WIV-100)/100 * BD * (TOC/100))/10^6
+		# with thickness in m, coverage in m2, wedge ice volume (WIV) in vol%, bulk density (BD) in 10^3 kg/m3, 
+		# total organic carbon (TOC) content in wt%
+	# we express ((WIV-100)/100 as the proportion of sediment: SV
+	# we BD and TOC/100 values, as they are not independent, into BDTOC
+
+	myboot <- function() {
+			
+		library(boot)
+	  # set working directory
+	  setwd("C:/Users/ljongeja/Desktop/Bootstrapping-permafrost-OC")
+	
+	  # load libraries
+	  library(boot) 
+	  library(RcmdrMisc)
+
+	  # load data
+	  # yedoma exposure
+	  Y.BDTOC <- read.table("YBDTOC.txt", header = TRUE)
+	  # DTLB exposure
+	  D.BDTOC <- read.table("DBDTOC.txt", header = TRUE)
+
+		# display intro, INSERT CITATION HERE
+		cat("\n Bootstrapping for OC budget calculations as in \n\n")
+		print(paste(cit))
+			
+		# prompt for user input
+		cat("\n Please make a selection of data to compare:")
+		cat("\n 1. Yedoma exposure \n","2. Drained thermokarst lake basin exposure \n")
+
+		depos <- as.numeric(readline(prompt="\n Enter your selection: "))
+
+		# translate the entry to input data or give error message	
+			if (depos > 2) 
+				{print("Invalid entry. Please try again") 
+				depos <- as.numeric(readline(prompt="Enter your selection: "))
+				}
+			if (depos == 1) {
+				loc <- "Yedoma sediments"
+				data <- Y.BDTOC
+				SV <- ((100-48)/100) 
+				thickness <- 15
+				coverage <- 136620000
+				}
+			if (depos == 2) {
+				loc <- "DTLB sediments"
+				data <- D.BDTOC
+				SV <- ((100-7)/100) 
+				thickness <- 5
+				coverage <- 296440000
+				}
+			
+		# create dataframe with bd and toc including weight, compensate for uneven sampling intervals
+	
+		out <- NULL
+
+			for (i in 1:length(data[,1])) {
+				bdtoc <- rep_len(data$BDTOC[i], length.out=data$int[i])
+				c <- data.frame(bdtoc)
+				out <-rbind(out, c) }
+				
+		mBudget<-vector()	# empty vector for storing mean values of 10,000 iterations
+		mDensity<-vector()
+	
+		## loop for 10,000 bootstrapping calculations
+			for (i.R in 1:10000) {
+				sample1 <- sample(out$bdtoc,20, replace = TRUE)
+				Budget <- (thickness * coverage * sample1 * SV)/1000000
+				mBudget[i.R]<-mean(Budget)
+				Density<- sample1 * SV * 1000
+				mDensity[i.R]<-mean(Density) }
+
+		pool <- round(numSummary(mBudget)$table[1],1)
+		pools <- round(numSummary(mBudget)$table[2],1)
+		dens <- round(numSummary(mDensity)$table[1],1)
+		denss <- round(numSummary(mDensity)$table[2],1)
+
+		cat(paste0("\n The OC pool of the ",loc," is ",pool," +/-",pools," Mt.\n","The OC density of the ",  loc, " is ",dens," +/-",denss," kg/m3."))
+	}
+
+myboot()
