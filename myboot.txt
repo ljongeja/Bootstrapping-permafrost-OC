@@ -3,7 +3,8 @@
 ### Potsdam, March 2020
 
 # script for bootstrapping method for OC pool calculations used by:
-cit <- ("Jongejans, L. L., Strauss, J., Lenz, J., Peterse, F., Mangelsdorf, K., Fuchs, M., et al. (2018). Organic matter characteristics in yedoma and thermokarst deposits on Baldwin Peninsula, west Alaska. Biogeosciences 15, 6033-6048. doi:10.5194/bg-15-6033-2018.")
+cit <- ("Jongejans, L. L., Strauss, J., Lenz, J., Peterse, F., Mangelsdorf, K., Fuchs, M. and Grosse, G. (2018). Organic matter characteristics in yedoma and thermokarst deposits on Baldwin Peninsula, west Alaska. Biogeosciences 15, 6033-6048. doi:10.5194/bg-15-6033-2018.")
+cit.data <- ("Jongejans, L. L., Strauss, J., Lenz, J., Peterse, F., Mangelsdorf, K., Fuchs, M. and Grosse, G. (2018). Sedimentological, biogeochemical and geochronological data of yedoma and thermokarst deposits in West-Alaska. PANGAEA, https://doi.org/10.1594/PANGAEA.892310")
 
 # the following script creates a function that can be called to automatically calculate the OC budget and OC density:
 # myboot() - quantifies OC storage for 2 study sites on Baldwin Peninsula: 
@@ -42,7 +43,9 @@ cit <- ("Jongejans, L. L., Strauss, J., Lenz, J., Peterse, F., Mangelsdorf, K., 
 		# display intro, INSERT CITATION HERE
 		cat("\n Bootstrapping for OC budget calculations as in \n\n")
 		print(paste(cit))
-			
+		cat("\n using the data from\n\n")
+		print(paste(cit.data))
+
 		# prompt for user input
 		cat("\n Please make a selection of data to compare:")
 		cat("\n 1. Yedoma exposure \n","2. Drained thermokarst lake basin exposure \n")
